@@ -1,0 +1,5 @@
+__pycache__
+.bsp
+.metals
+.scala-build
+.DS*
