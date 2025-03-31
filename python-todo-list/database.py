@@ -1,5 +1,5 @@
 import os
-DB_FILE = '../../server/to-do-list-database/database.txt'
+DB_FILE = '../../../server/python-todo-list/database.txt'
 
 
 def read_from_db() -> list:
