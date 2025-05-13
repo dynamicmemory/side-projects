@@ -3,10 +3,15 @@
 
 #define FNAME "database.txt"     //TODO change this to an actual db
 
+void flush_input() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
 char *get_line(char *line) {
     char c;
     char *lp = line;
-
+    printf(">>");
     while ((c = getchar()) != '\n') {
         *lp = c;
         lp++;
@@ -42,7 +47,6 @@ void append_list(char *filename) {
     fclose(fp);
 }
 
-// Probably going to have to approach this from a different angle
 void delete_line(char *filename, int line) {
     FILE *rp = fopen(filename, "r");
 
@@ -55,38 +59,69 @@ void delete_line(char *filename, int line) {
         *lp = c;
         lp++;
     }
-
+    lp = list;
     fclose(rp);
-    printf("%s", list); 
 
-    FILE *wp = fopen(filename, "w");
-    char *llp = list;
-    while (*llp != '\0') {
-        if (*llp == '\n')
-            line -= 1;
-        if (line == 0) {
-            printf("Line no: %d", line);
-            while (*llp != '\n') {
-                printf("inside the while %c \n",*llp);
-                llp++;
-            }
-        }
-        else {
-            putc(*llp, wp);
-            llp++;
+    printf("Deleting line number: %d\n", line);
+
+    FILE *wp = fopen(filename, "w"); 
+    int current_line = 1;
+    while (*lp != '\0') {
+        if (*lp == '\n') 
+            current_line++;
+        if (line == current_line)
+            lp++;
+        else { 
+            putc(*lp, wp);
+            lp++;
         }
     }
-
-
     fclose(wp);
 }
 
+int get_int(char c) {
+    int n = c - '0';
+    return n;
+}
+
+
 int main(int argc, char *argv[]) {
-   
-    read_list(FNAME);
-    append_list(FNAME);
-    read_list(FNAME);
-    delete_line(FNAME, 5);
-    read_list(FNAME);
+    char c; 
+    while (c != EOF) {
+        system("clear");
+        read_list(FNAME);
+        c = getchar();
+        flush_input();
+        if (c == 'a') {
+            system("clear");
+            read_list(FNAME);
+            append_list(FNAME);
+        }
+        else if (c == 'd') {
+            system("clear");
+            read_list(FNAME);
+            printf("Which line would you like to delete\n");
+            char d;
+            d = getchar();
+            flush_input();
+            d = get_int(d);
+            printf("d = %c\n",d);
+            delete_line(FNAME, d);
+        }
+        else if (c == 'e') 
+            c = EOF;
+        else
+            printf("Type a to add and d to delete\n");
+    }
+    // printf("Reading list\n");
+    // read_list(FNAME);
+    // append_list(FNAME);
+
+    // printf("Reading list\n");
+    // read_list(FNAME);
+    // printf("Reading list\n");
+    // delete_line(FNAME, 5);
+    // printf("Reading list\n");
+    // read_list(FNAME);
     return 0;
 }

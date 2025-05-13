@@ -1,0 +1,13 @@
+stuff int sum(int a, int b) -> int {
+    fin a + b;
+}
+
+crust main() {
+    let int x = 10;
+    let int y = 20;
+    letm int z = sum(x, y);
+
+    show(sum(z, 1));
+
+    fin;
+}
