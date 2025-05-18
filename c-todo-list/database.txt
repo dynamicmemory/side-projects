@@ -1,6 +1,7 @@
 1 - celebrate, you know why
-2 - the sky is the limit
-3 - i added this via the app
-4 - I have to shuffle indexes after deletes
+2 - delete all todos above this one without the app
+3 - I have to shuffle ithe app
 5 - delete all todos above this one without a number
-6 - this is a new line added
+6 - this ishe app
+
+

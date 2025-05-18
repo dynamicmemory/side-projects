@@ -1,3 +1,4 @@
+#include <endian.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -34,13 +35,16 @@ void pchar(char c) {
     write(1, &c, 1);   // stdout, ref to what is being wrote, size
 }
 
+void read_to_list() {
+}
+
+
 void insert(List *list) {
     // Creating the new node and assigning vars
     Node *p = (Node*) malloc(sizeof(Node));
     char *lp = p->todo;
     p->next = NULL;
     p->prev = NULL;
-    
     // Writing the string to the todo member 
     char c;
     while ((c = gchar()) != '\n') {
@@ -100,40 +104,140 @@ void wtf(char *filename) {
     write(fd, &c, 1);    // write the new line
 }
 
-void delete(char *filename, int linenumber) {
-    linenumber = linenumber - '0';
-    int fd = open(filename, O_RDWR, 0);
-    char buffer[BUFSIZ];
+// void delete(char *filename, int linenumber) {
+    // linenumber = linenumber - '0';
+
+    // int fd = open(filename, O_RDWR, 0);
+//     if (fd < 0) {
+//         perror("open");
+//         return;
+//     }
+//
+//     char buffer[BUFSIZ];
+//     int filebytes = read(fd, buffer, BUFSIZ);
+//     buffer[filebytes] = '\0';
+//
+//     close(fd);
+//
+//     int currentline = 1;
+//     char *start = buffer;
+//     char *end = buffer;
+//
+//     int out = open(filename, O_WRONLY | O_TRUNC, 0);
+//     if (out < 0) {
+//         perror("open for write");
+//         return;
+//     }
+//
+//     while (*end) {
+//         if (*end == '\n') {
+//             if (currentline != linenumber)
+//                 write(out, start, end - start + 1);
+//
+//             currentline++;
+//             end++;
+//             start = end;
+//         }
+//         else {
+//             end++;
+//         }
+//     }
+//     close(out);
+// }
+//
+void flush_input() {
     int c;
-    int currentline = 1;
+    while ((c = gchar()) != '\n' && c != EOF);
+}
 
-    while ((c = read(fd, buffer, BUFSIZ)) != EOF) {
-        if (c == '\n')
-            currentline++;
+void delete(List *list, int n) {
+    n = n - '0';
 
-        if (currentline == linenumber)
-            ;
-        else 
-            write(fd, buffer, c);
+    if (list->head == NULL) 
+        return;
+    
+    Node *p = list->head;           // head is end of list so we have to work backwards
+    while (p != NULL && p->key != n) {
+        p = p->prev;
+    }
+
+    if (p == NULL)
+        return;
+
+    if (p == list->head) {
+        list->head = list->head->prev;
+        list->head->next = NULL;
+    }
+    else {
+        if (p->prev != NULL) 
+            p->prev->next = p->next;
+        if (p->next != NULL) 
+            p->next->prev = p->prev;
+    }
+
+    // free(p->todo);      // probably gonna need this for the future
+    free(p);
+}
+
+void print_list(List *list) {
+    if (list->head == NULL)
+        return;
+
+    Node *p = list->head;
+
+    while(p->prev != NULL) 
+        p = p->prev;
+
+    while (p != NULL) {
+        printf("%d - %s", p->key, p->todo);
+        p = p->next;
+    }
+    printf("\n");
+}
+
+void adjust_indexes(List *list) {
+    if (list->head == NULL)
+        return;
+    Node *p = list->head;
+    while (p->prev != NULL) 
+        p = p->prev;
+
+    int index = 1;
+    while (p != NULL) {
+        p->key = index;
+        index++;
+        p = p->next;
     }
 }
+
 
 int main(int argc, char *argv[]) {
     List list;
     init_list(&list);
 
-    if (argc > 1) {
-        readfile(argv[1]);
-
-        printf("enter line number to del");
-        char n;
-        while ((n = gchar()) != '\n');
-        delete(argv[1], n);
-
-        printf("\n");
-        // wtf(argv[1]);
-        readfile(argv[1]);
+    while (1 == 1) {
         
+        system("clear");
+        print_list(&list);
+        char c = gchar();
+        flush_input();
+
+        if (c == 'a') {
+            insert(&list);
+        } 
+        else if (c == 'd') {
+            printf("Enter the todo number you wish to remove\n\n");
+            char n = gchar();
+            flush_input();
+            delete(&list, n);
+            adjust_indexes(&list);
+        }
+        else if (c == 'e') {
+            break;
+        }
+        else {
+            ;
+        }
     }
     return 0;
 }
