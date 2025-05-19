@@ -1,3 +1,8 @@
+// TODO: write list to db
+// TODO: read from db
+// TODO: Implement tail and replace all p->prev with p = tail p->next
+
+
 #include <endian.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -65,7 +70,7 @@ void insert(List *list) {
     // assign a key number to the node
     int linenumber = 1;
     Node *q = list->head;
-    while (q->prev != NULL)
+    while (q->prev != NULL)       // TODO: implement tail to stop this wind back
         q = q->prev;
     while (q->next != NULL) {
         q = q->next;
@@ -75,22 +80,96 @@ void insert(List *list) {
 
 }
 
-// write list to db
-// read from db
-// search node - delete helper
-// delete node 
-// print list 
+void insert_from_file(List *list, char *line) {
+    // Creating the new node and assigning vars
+    Node *p = (Node*) malloc(sizeof(Node));
+    char *lp = p->todo;
+    p->next = NULL;
+    p->prev = NULL;
+    // Writing the string to the todo member 
+    char c;
+    while ((c = *line) != '\n') {
+        *lp = c;
+        lp++;
+        line++;
+    }
+    *lp = '\n';
+
+    // checks for where it is inserted 
+    if (list->head == NULL) 
+        list->head = p;
+    else {
+        list->head->next = p;
+        p->prev = list->head;
+        list->head = p;
+    }
+ 
+    // assign a key number to the node
+    int linenumber = 1;
+    Node *q = list->head;
+    while (q->prev != NULL)       // TODO: implement tail to stop this wind back
+        q = q->prev;
+    while (q->next != NULL) {
+        q = q->next;
+        linenumber++;
+    }
+    list->head->key = linenumber;
+
+}
 
 // Reads a file that is input via command line... probably in general too actually 
-void readfile(char *filename) {
+void readfile(List *list, char *filename) {
     int fd = open(filename, O_RDONLY, 0);
 
     char buffer[BUFSIZ];
     int c;
-    while ((c = read(fd, buffer, BUFSIZ)) > 0)
-        write(1, buffer, c);
+    while ((c = read(fd, buffer, BUFSIZ)) > 0) ;
+        // printf("%c",c);
+        // write(1, buffer, c);
+    
+    char line[100];
+    char *lp = line;
+    char *end = buffer;
+    while (*end != EOF) {
+        if (*end == '\n') {
+            *lp = *end;
+            insert_from_file(list, line);
+            end++;
+            lp = line;
+        }
+        else { 
+            *lp = *end;
+            end++;
+            lp++;
+        }
+    }
     close(fd);
 }
+
+void update_db(List *list, char *filename) {
+    if (list->head == NULL)
+        return;
+
+    Node *p = list->head;
+    while (p->prev != NULL) {
+        p = p->prev;
+    }
+
+    int fd = open(filename, O_WRONLY | O_TRUNC, 0);
+
+    while (p != NULL) {
+        char *tp = p->todo;
+        while (*tp != '\n') {
+            write(fd, tp, 1);
+            tp++;
+        }
+        write(fd, tp, 1);
+        p = p->next;
+    }
+
+    close(fd);
+}
+
 
 void wtf(char *filename) {
     int fd = open(filename, O_RDWR, 0);
@@ -212,11 +291,13 @@ void adjust_indexes(List *list) {
 
 
 int main(int argc, char *argv[]) {
+
     List list;
     init_list(&list);
 
+    readfile(&list, argv[1]);
     while (1 == 1) {
-        
+
         system("clear");
         print_list(&list);
         char c = gchar();
@@ -224,6 +305,7 @@ int main(int argc, char *argv[]) {
 
         if (c == 'a') {
             insert(&list);
+            update_db(&list, argv[1]);
         } 
         else if (c == 'd') {
             printf("Enter the todo number you wish to remove\n\n");
@@ -231,6 +313,8 @@ int main(int argc, char *argv[]) {
             flush_input();
             delete(&list, n);
             adjust_indexes(&list);
+            update_db(&list, argv[1]);
+            
         }
         else if (c == 'e') {
             break;
