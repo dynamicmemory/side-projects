@@ -1,328 +1,80 @@
-// TODO: write list to db
-// TODO: read from db
-// TODO: Implement tail and replace all p->prev with p = tail p->next
-
-
-#include <endian.h>
+#include <stddef.h>
 #include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include "node.h"
 
-typedef struct Node {
-        struct Node *next;
-        struct Node *prev;
-        int key;
-        char todo[100];
-} Node;
+// If i end up writing my own printf and server the stdio connection.
+// #define BUFSIZ 8192
+// #define NULL ((void *)0)
+// #define EOR (-1)
 
 typedef struct List {
-        Node *head;
-        // Node *tail;
+    Node *head;
+    Node *tail;
+    char *filename;
 } List;
 
-void init_list(List *list) {
+void init_list(List *list, char *filename) {
     list->head = NULL;
-    // list->tail = NULL;
+    list->tail = NULL;
+    list->filename = filename;
 }
 
-// Read from stdin
-int gchar(void) {
+// Pure experiment
+
+
+char gchar() {
     char c;
-    if (read(0, &c, 1) == 1)   // stdin, ref to what is being red, size
+    if (read(0, &c, 1) == 1)
         return c;
     else 
         return EOF;
 }
 
-// Read to stdout
-void pchar(char c) {
-    write(1, &c, 1);   // stdout, ref to what is being wrote, size
+size_t slen(const char *s) {
+    const char *p = s;
+    while (*p) p++;
+    return p - s;
 }
 
-void read_to_list() {
-}
-
-
-void insert(List *list) {
-    // Creating the new node and assigning vars
-    Node *p = (Node*) malloc(sizeof(Node));
-    char *lp = p->todo;
-    p->next = NULL;
-    p->prev = NULL;
-    // Writing the string to the todo member 
+// get cli input, this could be bug prone in future fo shaw
+char *getinput() {
     char c;
+    char buffer[256];
+    char *bp = buffer;
+
     while ((c = gchar()) != '\n') {
-        *lp = c;
-        lp++;
+        *bp = c;
+        bp++;
     }
-    *lp = '\n';
-
-    // checks for where it is inserted 
-    if (list->head == NULL) 
-        list->head = p;
-    else {
-        list->head->next = p;
-        p->prev = list->head;
-        list->head = p;
-    }
- 
-    // assign a key number to the node
-    int linenumber = 1;
-    Node *q = list->head;
-    while (q->prev != NULL)       // TODO: implement tail to stop this wind back
-        q = q->prev;
-    while (q->next != NULL) {
-        q = q->next;
-        linenumber++;
-    }
-    list->head->key = linenumber;
-
-}
-
-void insert_from_file(List *list, char *line) {
-    // Creating the new node and assigning vars
-    Node *p = (Node*) malloc(sizeof(Node));
-    char *lp = p->todo;
-    p->next = NULL;
-    p->prev = NULL;
-    // Writing the string to the todo member 
-    char c;
-    while ((c = *line) != '\n') {
-        *lp = c;
-        lp++;
-        line++;
-    }
-    *lp = '\n';
-
-    // checks for where it is inserted 
-    if (list->head == NULL) 
-        list->head = p;
-    else {
-        list->head->next = p;
-        p->prev = list->head;
-        list->head = p;
-    }
- 
-    // assign a key number to the node
-    int linenumber = 1;
-    Node *q = list->head;
-    while (q->prev != NULL)       // TODO: implement tail to stop this wind back
-        q = q->prev;
-    while (q->next != NULL) {
-        q = q->next;
-        linenumber++;
-    }
-    list->head->key = linenumber;
-
-}
-
-// Reads a file that is input via command line... probably in general too actually 
-void readfile(List *list, char *filename) {
-    int fd = open(filename, O_RDONLY, 0);
-
-    char buffer[BUFSIZ];
-    int c;
-    while ((c = read(fd, buffer, BUFSIZ)) > 0) ;
-        // printf("%c",c);
-        // write(1, buffer, c);
+    *bp = c;
     
-    char line[100];
-    char *lp = line;
-    char *end = buffer;
-    while (*end != EOF) {
-        if (*end == '\n') {
-            *lp = *end;
-            insert_from_file(list, line);
-            end++;
-            lp = line;
-        }
-        else { 
-            *lp = *end;
-            end++;
-            lp++;
-        }
-    }
-    close(fd);
+    return malloc(slen(buffer) + 1); 
 }
 
-void update_db(List *list, char *filename) {
-    if (list->head == NULL)
-        return;
-
-    Node *p = list->head;
-    while (p->prev != NULL) {
-        p = p->prev;
-    }
-
-    int fd = open(filename, O_WRONLY | O_TRUNC, 0);
-
-    while (p != NULL) {
-        char *tp = p->todo;
-        while (*tp != '\n') {
-            write(fd, tp, 1);
-            tp++;
-        }
-        write(fd, tp, 1);
-        p = p->next;
-    }
-
-    close(fd);
-}
-
-
-void wtf(char *filename) {
-    int fd = open(filename, O_RDWR, 0);
-
+char read_db(List *list) {
+    int fd = open(list->filename, O_RDONLY); // 3rd param is permissions, dont need here
     char buffer[BUFSIZ];
-    char c;
-
-    lseek(fd, 0L, 2);
-    while ((c = gchar()) != '\n') 
-        write(fd, &c, 1);
-    write(fd, &c, 1);    // write the new line
 }
 
-// void delete(char *filename, int linenumber) {
-    // linenumber = linenumber - '0';
+void insert(List *list, int flag) {
+    Node *p = (Node*)malloc(sizeof(Node));
+    if (flag != 0) 
+        p->todo = getinput();
+    else 
+        p->todo = // when reading from db
 
-    // int fd = open(filename, O_RDWR, 0);
-//     if (fd < 0) {
-//         perror("open");
-//         return;
-//     }
-//
-//     char buffer[BUFSIZ];
-//     int filebytes = read(fd, buffer, BUFSIZ);
-//     buffer[filebytes] = '\0';
-//
-//     close(fd);
-//
-//     int currentline = 1;
-//     char *start = buffer;
-//     char *end = buffer;
-//
-//     int out = open(filename, O_WRONLY | O_TRUNC, 0);
-//     if (out < 0) {
-//         perror("open for write");
-//         return;
-//     }
-//
-//     while (*end) {
-//         if (*end == '\n') {
-//             if (currentline != linenumber)
-//                 write(out, start, end - start + 1);
-//
-//             currentline++;
-//             end++;
-//             start = end;
-//         }
-//         else {
-//             end++;
-//         }
-//     }
-//     close(out);
-// }
-//
-void flush_input() {
-    int c;
-    while ((c = gchar()) != '\n' && c != EOF);
-}
-
-void delete(List *list, int n) {
-    n = n - '0';
-
-    if (list->head == NULL) 
-        return;
-    
-    Node *p = list->head;           // head is end of list so we have to work backwards
-    while (p != NULL && p->key != n) {
-        p = p->prev;
-    }
-
-    if (p == NULL)
-        return;
-
-    if (p == list->head) {
-        list->head = list->head->prev;
-        list->head->next = NULL;
-    }
-    else {
-        if (p->prev != NULL) 
-            p->prev->next = p->next;
-        if (p->next != NULL) 
-            p->next->prev = p->prev;
-    }
-
-    // free(p->todo);      // probably gonna need this for the future
-    free(p);
-}
-
-void print_list(List *list) {
-    if (list->head == NULL)
-        return;
-
-    Node *p = list->head;
-
-    while(p->prev != NULL) 
-        p = p->prev;
-
-    while (p != NULL) {
-        printf("%d - %s", p->key, p->todo);
-        p = p->next;
-    }
-    printf("\n");
-}
-
-void adjust_indexes(List *list) {
-    if (list->head == NULL)
-        return;
-    Node *p = list->head;
-    while (p->prev != NULL) 
-        p = p->prev;
-
-    int index = 1;
-    while (p != NULL) {
-        p->key = index;
-        index++;
-        p = p->next;
-    }
 }
 
 
-int main(int argc, char *argv[]) {
+int main() {
+    char filename[] = "database.txt"; 
 
     List list;
-    init_list(&list);
 
-    readfile(&list, argv[1]);
-    while (1 == 1) {
-
-        system("clear");
-        print_list(&list);
-        char c = gchar();
-        flush_input();
-
-        if (c == 'a') {
-            insert(&list);
-            update_db(&list, argv[1]);
-        } 
-        else if (c == 'd') {
-            printf("Enter the todo number you wish to remove\n\n");
-            char n = gchar();
-            flush_input();
-            delete(&list, n);
-            adjust_indexes(&list);
-            update_db(&list, argv[1]);
-            
-        }
-        else if (c == 'e') {
-            break;
-        }
-        else {
-            ;
-        }
-    }
     return 0;
 }
+
 

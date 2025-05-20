@@ -1,6 +1,3 @@
-celebrate, you know why
-delete all todos above this one without the app
-I have to shuffle ithe app
-delete all todos above this one without a number
-this ishe app
-did this line get added?
+Build Crust the rust version of C, the C verion of rust!
+Build Capsule the terminal
+Build Capshell the shell script for Capsule
