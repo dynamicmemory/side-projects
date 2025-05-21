@@ -1,5 +1,5 @@
 typedef struct Node {
     struct Node *next;
     int key;
-    char *todo;
+    char todo[256];
 } Node;
