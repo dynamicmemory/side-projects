@@ -1,11 +1,10 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <stdbool.h>
+#include <stdio.h>             // allows printing, could remove and write my own
+#include <unistd.h>            // Reading stdin, stdout, stderr
+#include <fcntl.h>             // system calls to open and close file 
+#include <stdlib.h>            // system calls to allocate memory from the heap
+#include <stdbool.h>           // imports booleans.... yep that's right
 // #define NULL ((void *)0)                for when im feeling psychotic
 
-// typedef enum bool { false = 0, true = 1 } bool;
 char gchar(void) {
     char c;
     if (read(0, &c, 1) == 1)
@@ -14,37 +13,56 @@ char gchar(void) {
         return EOF;
 }
 
+// Clears stdin after getting input.
 void flushinput() {
     char c;
     while ((c = gchar()) != '\n' && c != EOF);
 }
 
+// A node in a linked list
 typedef struct Node {
     struct Node *next;
     char *todo;
     int key;
 } Node;
 
+// Initializing a node
 Node *init_node() {
     Node *p = malloc(sizeof(Node));
     p->next = NULL;
     return p;
 }
 
+// A Linked list
 typedef struct List {
     Node *head;
     Node *tail;
+    char *filename;
 } List;
 
+void getinput(List *list, char *line) {
+
+    char *lp = line;
+    char c;
+    while ((c = gchar()) != '\n')
+        *lp++ = c;
+
+    *lp++ = c;
+    *lp = '\0';
+}
+
+// Initializing a linked list
 void init_list(List *list) {
     Node *head = NULL;
     Node *tail= NULL;
 };
 
+// Checks for empty list
 bool empty(List *list) {
     return list->head == NULL;
 }
 
+// searches a list for provided key 
 Node *search(List *list, int key) {
     if (empty(list))
         return NULL;
@@ -60,6 +78,7 @@ Node *search(List *list, int key) {
     return NULL;
 }
 
+// if element deleted, reshuffles keys so that they are numbered correctly
 void updatekeys(List *list) {
     if (empty(list))
         return;
@@ -69,14 +88,25 @@ void updatekeys(List *list) {
         p->key = key++;
 }
 
-size_t slen(const char *s) {
+// Length of a string, needed for malloc to set aside enough space in memory
+size_t stringlen(const char *s) {
     const char *p = s;
     while (*p) p++;
     return p - s;
 }
 
+// Write update to the db
+void write_to_db(List *list, char *filename) {
+    int fd = open(filename, O_WRONLY | O_TRUNC);
+
+    for (Node *p = list->head; p != NULL; p = p->next) 
+        write(fd, p->todo, stringlen(p->todo));
+
+    close(fd);
+}
+
+// Insert a new node into the list
 void insert(List *list, char *todo) {
-    // Initializing the node, might move this to inside this block
     Node *p = init_node();
 
     // Assigning the new nodes position
@@ -95,12 +125,13 @@ void insert(List *list, char *todo) {
         p->key = key++;
 
     // Pointing its todo 
-    p->todo = malloc(slen(todo) + 1);     // Allocate the right amount of mem for the str
+    p->todo = malloc(stringlen(todo) + 1);  // Allocate enough mem for the str
     char *lp = p->todo;
     while (*todo)
         *lp++ = *todo++;
 }
 
+// Deleting a node from the list
 void delete(List *list, int key) {
     key = key - '0';
     Node *p = search(list, key);
@@ -124,6 +155,7 @@ void delete(List *list, int key) {
     updatekeys(list);
 }
 
+// Print the list to stdout
 void printlist(List *list) {
     if (empty(list))
         return;
@@ -135,8 +167,10 @@ void printlist(List *list) {
     }
 }
 
+// reads db when program initially opens, creates list out of db file
 void read_from_db(List *list, char *filename) {
-    int fd = open(filename, O_RDONLY);
+ 
+    int fd = open(filename, O_RDONLY | O_CREAT, 0644);
     char buffer[BUFSIZ];
     char *bp = buffer;
     char c;
@@ -156,30 +190,43 @@ void read_from_db(List *list, char *filename) {
         else {
             *tp++ = *bp++;
         }
+    close(fd);
 }
 
 int main() {
+    
+    char *filename = "./poop.txt";
+
     List list;
     init_list(&list);
-    read_from_db(&list, "./test.txt");
+    read_from_db(&list, filename);
 
     while (1 == 1) {
-        // system("clear");
+        system("clear");
+        printf("C what you have to do\n\n"
+           ">> Press 'a' to add to the list\n"
+           ">> Press 'd' to delete from the list\n"
+           ">> Press 'e' to exit the application\n"
+           "_____________________________________________________________________________\n\n");
+
         printlist(&list);
- 
-        printf("\n\nEnter a command\n\n");
+        printf("\n\n"); 
         char c = gchar();
         flushinput();
 
         if (c == 'a') {
             printf("Enter what you need to do\n\n");
-            insert(&list, "added item to the list\n");
+            char line[256];
+            getinput(&list, line);
+            insert(&list, line); 
+            write_to_db(&list, filename);
         }
         else if (c == 'd') {
             printf("Enter the number you wish to delete\n\n");
             char n = gchar();
             flushinput();
             delete(&list, n);
+            write_to_db(&list, filename);
         }
         else if (c == 'e') {
             break;
