@@ -1,0 +1,31 @@
+int add(int: a, int: b) { 
+    ret a + b
+}
+
+float divide(float: a, float: b) {
+    ret a / b
+}
+
+char first_char(&string: word) {
+    ret string[0]
+}
+
+string user_input() {
+    ret stdin("Enter your name");
+}
+
+void print_input(string: input) {
+    stdout("The user's name is {}", input);
+}
+
+main() {
+    stdout(add(1, 3));
+    stdout(divide(1,4));
+
+    string name = user_input();
+    stdout(first_char(name));
+    
+    print_input(name);
+
+    ret 0;
+}
