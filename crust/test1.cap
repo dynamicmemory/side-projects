@@ -27,5 +27,56 @@ main() {
     
     print_input(name);
 
+    for letter in name:
+        stdout(letter);
+
+    a = 0;
+    char c = 'a';
+    int a = 0;
+    bool b = false 
+    if name == "poop" {
+        b = true;
+    }
+    else {
+        b = false
+    }
+
+    inf (true):
+        a++;
+
+        if (a > 10)
+            break;
+
+
     ret 0;
 }
+
+# Grammer
+
+# comment - # for single line ## multi line 
+# TODO - #TODO - built in todo comments
+
+# main - entry point for the program
+# ret - return 
+# int - 32bit integer 
+# float - double precision 32bit real number 
+# char - single ascii character 
+# string - dynamic character array 
+# bools are either 0 false, 1 true, or -1 None/Null or is that to crazy? 
+# vector - 
+# list - 
+# set - 
+# map -  
+# tree - binary, balanced
+
+# quicksort - default sorting algo
+
+
+# TODO 
+# main 
+# primatives
+# conditionals
+# loops 
+# functions 
+# strings 
+
