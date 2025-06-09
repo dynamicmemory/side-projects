@@ -1,10 +1,2 @@
 01 - build a todolist app in assembly 
 02 - have fun bitch
-03 - build a todolist app in assembly 
-04 - have fun bitch
-05 - build a todolist app in assembly 
-06 - have fun bitch
-07 - build a todolist app in assembly 
-08 - have fun bitch
-09 - build a todolist app in assembly 
-10 - have fun bitch

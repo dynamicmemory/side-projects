@@ -7,13 +7,11 @@ fname:
 command:
   .ascii "What would you like to do? ('a' - add|'d'- delete)\0"
 
-msg:
-  .ascii "it worked\0"
-
-a:
-  .ascii "a\0"
-
 .equ cmd_len, 51 
+
+add_msg:
+  .ascii "What would you like to add?\0"
+
 
 .section .bss
 .equ BUFFERSIZ, 500
@@ -35,7 +33,7 @@ _start:
   
   # eax now has our fd, push it onto the stack 
   pushl %eax 
-
+  loop:
   # Read the file into the buffer 
   pushl $buffer 
   pushl $BUFFERSIZ
@@ -56,33 +54,56 @@ _start:
   call write 
   addl $12, %esp 
 
+  call newline
+  
   # Read users input 
   pushl $STDIN
   pushl $buffer
-  pushl $1 
+  pushl $BUFFERSIZ
   call read 
   addl $12, %esp
  
-  
-  movl buffer, %eax  # buffer holds users input 
-  movl %eax, %ebx    # moving to b for debugging 
-  #jmp end 
-  #movl %eax, %al    # might need to use bytes instead of words 
-  cmpl $a, %eax      # this is broken af
+  movzbl buffer, %eax
+
+  cmpl $'a', %eax
   je add 
-  jmp end 
+
+  cmpl $'d', %eax
+  je delete  
+
+  cmpl $'e', %eax 
+  je exit 
+
+  jmp loop 
 
   add:
     pushl $STDOUT 
-    pushl $msg 
-    pushl $10
+    pushl $add_msg
+    pushl $28
     call write 
     addl $12, %esp
-    jmp end
-  # delete, add, exit 
-  # return matching action
-  # Repeat
-  #jmp end 
+
+    call newline
+
+    pushl $STDIN 
+    pushl $buffer
+    pushl $BUFFERSIZ
+    call read 
+    addl $12, %esp 
+ 
+    pushl $buffer 
+    pushl $BUFFERSIZ
+    call write 
+    addl $8, %esp
+
+    jmp loop
+
+  delete:
+    jmp end 
+
+  exit:
+    jmp end 
+
   end: 
     movl %ebp, %esp
     popl %ebp 
