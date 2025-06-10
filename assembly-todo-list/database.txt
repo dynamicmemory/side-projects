@@ -1,2 +1,14 @@
 01 - build a todolist app in assembly 
 02 - have fun bitch
+03 - for the win fr this time?
+04 - frfr yo
+05 - frfr agane
+06 - frfr giga agane
+07 - its really happening
+08 - clear the screen
+08 - clear the screen frfr
+09 - new we gotta do the numbers and deleting
+10 - more like recovering from deleting....
+11 - combined newline and clearscreen into one file
+12 - fix many bug
+13 - does this go on a new line?14 - it does not go on a new line

@@ -10,13 +10,24 @@ input:
 newline: .ascii "\n\0"
 
 .section .bss 
-.equ bufsiz, 500
-.lcomm buffer, bufsiz 
+#.equ bufsiz, 500
+.lcomm buffer, 4096 
+
+.lcomm statbuf, 144 
 
 .section .text 
 
 .globl _start 
 _start:
+
+  #getting file size 
+  movl $106, %eax 
+  movl $fname, %ebx 
+  movl $statbuf, %ecx
+  int $0x80 
+
+  movl statbuf+24, %esi
+
   #open 
   movl $5, %eax 
   movl $fname, %ebx 
@@ -25,15 +36,16 @@ _start:
   int $0x80
 
   movl %eax, %edi
+  movl %esi, %edx
   #read
   movl $3, %eax 
   movl %edi, %ebx 
   movl $buffer, %ecx 
-  movl $bufsiz, %edx 
+  #movl $bufsiz, %edx 
   int $0x80
 
   #write
-  movl %eax, %edx 
+  #movl %eax, %edx 
   movl $4, %eax
   movl $1, %ebx
   movl $buffer, %ecx 
@@ -61,17 +73,22 @@ _start:
   int $0x80
 
   #countfilesize 
+  movl $106, %eax 
+  movl $fname, %ebx 
+  movl $statbuf, %ecx
+  int $0x80 
 
+  movl statbuf+24, %edx
 
   #read
   movl $3, %eax 
   movl %edi, %ebx 
   movl $buffer, %ecx 
-  movl $bufsiz, %edx 
+  #movl $bufsiz, %edx 
   int $0x80
 
   #write
-  movl %eax, %edx 
+  #movl %eax, %edx 
   movl $4, %eax
   movl $1, %ebx
   movl $buffer, %ecx 
