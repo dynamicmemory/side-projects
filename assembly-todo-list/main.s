@@ -1,6 +1,10 @@
 .include "syscalls.s"
 .section .data
 
+debugmsg:
+  .ascii "it worked\0"
+.equ debugsiz, 10
+
 fname:
   .ascii "database.txt\0"
 
@@ -19,6 +23,7 @@ delete_msg:
 .equ BUFFERSIZ, 4096
 .lcomm buffer, 4096
 .lcomm statbuff, 144    # a buffer containing file information
+.lcomm temp_buffer, 4096
 
 .section .text 
 .globl _start
@@ -195,31 +200,33 @@ _start:
     movzbl buffer, %edi 
     # reading the file, not cleaning buffer as we should rewrite, though should.
     pushl $buffer 
+    # esi has our current file size
     pushl %esi 
     call read 
     addl $8, %esp 
 
     #now we need to count new lines 
+    #movl $0, %eax
     movl $0, %ecx
     movl $0, %edx
     find_line:
       movl $0, %eax
 
-      cmpl $0, %edi 
+      cmpl $1, %edi  # edi holds our request line to delete 
       je found_line
 
       decl %edi 
       find_line_inner:
+        movzbl buffer(%ecx), %eax
         cmpl $'\n', %eax 
         je find_line
 
         incl %ecx 
-        movl buffer(,%ecx,4), %eax
         jmp find_line_inner
 
     found_line:
-      movl buffer(,%ecx,4), %eax  # Now we shouild be at the first char of the line we want 
-      movl (%eax), temp_buffer(,%edx, 4)
+      movzbl buffer(%ecx), %eax  # Now we shouild be at the first char of the line we want 
+      movl $1, temp_buffer(%edx)
       incl %edx
       incl %ecx 
 
@@ -236,11 +243,15 @@ _start:
     # buffer, bim bam boom, deleted a line.... so eazy... 
     finished: 
       # temporarily as a test I want to print the output of the line we got first 
-      movl $106, %eax 
-      movl $temp_buffer, %edi 
-      movl 
+
+      pushl $STDOUT 
+      #pushl $debugmsg
+      #pushl $debugsiz
       pushl $temp_buffer
-      pushl $temp_buffer_size 
+      pushl $BUFFERSIZ
+      call write 
+      addl $12, %esp
+
     jmp loop
   exit:
     jmp end 
