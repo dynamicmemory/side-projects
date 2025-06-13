@@ -1,6 +1,8 @@
 .include "syscalls.s"
 .section .data
 
+
+
 debugmsg:
   .ascii "it worked\0"
 .equ debugsiz, 10
@@ -24,6 +26,7 @@ delete_msg:
 .lcomm buffer, 4096
 .lcomm statbuff, 144    # a buffer containing file information
 .lcomm temp_buffer, 4096
+.lcomm test_buff, 4096
 
 .section .text 
 .globl _start
@@ -174,6 +177,15 @@ _start:
     jmp loop
 
   delete:
+    #wind back the pointer - abstract eventually
+    movl $19, %eax 
+    popl %ebx 
+    movl $0, %ecx 
+    movl $0, %edx
+    int $0x80
+    # repush the fd back onto the stack
+    pushl %ebx
+
     # write message to user  
     pushl $STDOUT
     pushl $delete_msg 
@@ -198,7 +210,14 @@ _start:
     addl $12, %esp
 
     movzbl buffer, %edi 
-    # reading the file, not cleaning buffer as we should rewrite, though should.
+    # clean my shialebuff
+    #movl $0, %eax 
+    #movl $buffer, %edi 
+    #movl $BUFFERSIZ, %ecx
+    #shrl $2, %ecx
+    #rep stosl 
+
+    #reading the file again
     pushl $buffer 
     # esi has our current file size
     pushl %esi 
@@ -209,6 +228,7 @@ _start:
     #movl $0, %eax
     movl $0, %ecx
     movl $0, %edx
+    subl $'0', %edi 
     find_line:
       movl $0, %eax
 
@@ -218,6 +238,7 @@ _start:
       decl %edi 
       find_line_inner:
         movzbl buffer(%ecx), %eax
+        movl %eax, test_buff(%ecx)
         cmpl $'\n', %eax 
         je find_line
 
@@ -226,12 +247,13 @@ _start:
 
     found_line:
       movzbl buffer(%ecx), %eax  # Now we shouild be at the first char of the line we want 
-      movl $1, temp_buffer(%edx)
-      incl %edx
-      incl %ecx 
 
       cmpl $'\n', %eax 
       je finished 
+
+      movl $'a', temp_buffer(%edx)
+      incl %edx
+      incl %ecx 
 
       jmp found_line
 
@@ -243,7 +265,6 @@ _start:
     # buffer, bim bam boom, deleted a line.... so eazy... 
     finished: 
       # temporarily as a test I want to print the output of the line we got first 
-
       pushl $STDOUT 
       #pushl $debugmsg
       #pushl $debugsiz
