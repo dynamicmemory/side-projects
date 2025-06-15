@@ -228,7 +228,7 @@ _start:
     #movl $0, %eax
     movl $0, %ecx
     movl $0, %edx
-    subl $'0', %edi 
+    #subl $'0', %edi 
     find_line:
       movl $0, %eax
 
@@ -237,8 +237,8 @@ _start:
 
       decl %edi 
       find_line_inner:
-        movzbl buffer(%ecx), %eax
-        movl %eax, test_buff(%ecx)
+        movl buffer(%ecx), %eax
+        movb %al, test_buff(%ecx)
         cmpl $'\n', %eax 
         je find_line
 
@@ -246,12 +246,12 @@ _start:
         jmp find_line_inner
 
     found_line:
-      movzbl buffer(%ecx), %eax  # Now we shouild be at the first char of the line we want 
+      movl buffer(%ecx), %eax  # Now we shouild be at the first char of the line we want 
 
       cmpl $'\n', %eax 
       je finished 
 
-      movl $'a', temp_buffer(%edx)
+      movb %al, temp_buffer(%edx)
       incl %edx
       incl %ecx 
 

@@ -3,10 +3,3 @@ This is now the second line
 This would be considered the third line
 This is line like 4 i think
 c
-This file is officially fuicked
-line 1 million
-eh this file is ...
-it keeps going
-and going
-and....
-a...

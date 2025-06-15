@@ -52,8 +52,8 @@ _start:
   incl %eax 
 
   pass:
-    # int files_bytes = %eax 
-    movl %eax, files_bytes(%ebp)     # The bytes read from the input awa size 
+     # int files_bytes = %eax 
+     movl %eax, files_bytes(%ebp)     # The bytes read from the input awa size 
 
   # write the input to the file 
   movl $4, %eax 
@@ -107,20 +107,104 @@ _start:
   movl $2, %edx 
   int $0x80 
 
-  movl $3, %edi
-  xorl %eax, %eax
+  movl $5, %edi
+  xorl %edx, %edx 
+  xorl %ecx, %ecx
+  xorl %ebx, %ebx
+  xorl %esi, %esi 
   loop:
+    xorl %eax, %eax
+    #xorl %ecx, %ecx
+
     cmpl $0, %edi 
     je loop3
-
+ 
+    #xorl %esi, %esi 
     decl %edi 
+
+    # iterate to the start of the line we want yeeted 
     loop2:
-       
-      cmpb $'\n', 
-  
+      cmpb $'\n', %al
+      je loop
+
+      movl buff(%edx), %eax 
+      movb %al, temp(%ecx)
+      incl %esi
+      incl %edx 
+      incl %ecx 
+      jmp loop2 
+
+  # iterate the bytes of the line to del into the abyss
   loop3:
+    cmpb $'\n', %al 
+    je loop4 
 
+    movl buff(%edx), %eax 
 
+    incl %edx 
+    incl %ebx 
+    jmp loop3
+
+  # Iterate the rest of the file 
+  loop4:
+    cmpl files_bytes(%ebp), %edx
+    je loop5
+
+    movl buff(%edx), %eax 
+    movb %al, temp(%ecx)
+    incl %esi 
+    incl %edx 
+    incl %ecx 
+    jmp loop4 
+  
+  # close file, open file in trunc, write file, close file, open file in rdwr app 
+  loop5:  
+
+    # closing file 
+    movl $6, %eax 
+    movl fd(%ebp), %ebx 
+    int $0x80 
+
+    # open file in trunc mode 
+    movl $5, %eax 
+    movl $fname, %ebx 
+    movl $0x202, %ecx 
+    movl $0644, %edx 
+    int $0x80 
+    
+    # assign new fd 
+    movl %eax, fd(%ebp)
+    
+    # write new buffer to file 
+    movl $4, %eax 
+    movl fd(%ebp), %ebx 
+    movl $temp, %ecx 
+    movl %esi, %edx 
+    int $0x80
+   
+    # wipe buffer clean 
+    movl $0, %eax 
+    movl $buff, %edi 
+    movl $BUFFERSIZ, %ecx 
+    shrl $2, %ecx
+    rep stosl
+    
+    # read file to buffer 
+    movl $3, %eax 
+    movl fd(%ebp), %ebx 
+    movl $buff, %ecx 
+    movl $BUFFERSIZ, %edx 
+    int $0x80 
+    
+    # save new file size 
+    movl %eax, files_bytes(%ebp)
+    
+    # write file to stdout 
+    movl $4, %eax 
+    movl $1, %ebx 
+    movl $buff, %ecx 
+    movl files_bytes(%ebp), %edx 
+    int $0x80 
 
   # exit program
   movl %ebp, %esp 
@@ -135,4 +219,3 @@ _start:
 # - add \n to all stdin to control line manipulation
 # - wiping a buffer to be used again 
 # - counting the types in a file or buffer 
-
