@@ -14,6 +14,8 @@ newline:
 .equ BUFFERSIZ, 4096
 .lcomm buff, BUFFERSIZ
 .lcomm temp, BUFFERSIZ
+.lcomm user_input, BUFFERSIZ 
+
 
 .section .text 
 
@@ -107,7 +109,20 @@ _start:
   movl $2, %edx 
   int $0x80 
 
-  movl $5, %edi
+##################
+
+  movl $3, %eax 
+  movl $0, %ebx 
+  movl $user_input, %ecx 
+  movl $BUFFERSIZ, %edx 
+  int $0x80 
+ 
+  # Rebuild this to take an input number and turn it into an int str2int
+  movzbl user_input, %eax 
+  subl $'0', %eax 
+
+##################
+  movl %eax, %edi
   xorl %edx, %edx 
   xorl %ecx, %ecx
   xorl %ebx, %ebx
@@ -116,7 +131,7 @@ _start:
     xorl %eax, %eax
     #xorl %ecx, %ecx
 
-    cmpl $0, %edi 
+    cmpl $1, %edi 
     je loop3
  
     #xorl %esi, %esi 
