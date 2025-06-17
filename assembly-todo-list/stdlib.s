@@ -1,0 +1,1 @@
+.equ syscall, 0x80

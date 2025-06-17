@@ -1,29 +1,23 @@
-
-# Fn for opening file or creating if one doesn't exist
-# Fn for reading from cli and from file
-# Fn for writing to stdout and file 
-# Main routine to get user command and execute correct line of logic
-.include "syscalls.s"
-.section .data
+.include "stdlib.s"
+.section .data 
 
 .equ fname, 16
-.equ mode, 12
-.equ priv, 8
-
+.equ flag, 12 
+.equ permissions, 8
 .section .text 
 
-.globl open 
+# .type open, @function # it's easier to just declare this as global instead of func
+.globl open
 open:
-   pushl %ebp
-   movl %esp, %ebp 
- 
-   movl $OPEN, %eax
-   movl fname(%ebp), %ebx
-   movl mode(%ebp), %ecx
-   movl priv(%ebp), %edx
-   int $INTERUPT
+  pushl %ebp
+  movl %esp, %ebp 
 
-   movl %ebp, %esp
-   popl %ebp 
-   ret 
-
+  movl $5, %eax
+  movl fname(%ebp), %ebx 
+  movl flag(%ebp), %ecx 
+  movl permissions(%ebp), %edx
+  int $syscall
+  
+  movl %ebp, %esp 
+  popl %ebp 
+  ret 
