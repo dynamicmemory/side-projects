@@ -14,7 +14,7 @@ fsize:
   movl %esp, %ebp 
 
   movl $106, %eax 
-  movl $fname, %ebx
+  movl fname(%ebp), %ebx
   movl $stats, %ecx 
   int $syscall 
 

@@ -30,28 +30,34 @@ _start:
 
   # int fd = eax 
   movl %eax, fd(%ebp)
-
-  pushl $fname 
+  
+  # Get the file size 
+  pushl $fname
   call fsize 
   addl $4, %esp 
-
+  
+  # move the filesize into its variable 
   movl %eax, file_size(%ebp)
 
   # read file in 
   pushl fd(%ebp)
   pushl $file_buffer
-  pushl $BUFFERSIZ
-  #pushl file_size(%ebp)
+  pushl file_size(%ebp)
   call read 
+  addl $12, %esp
 
-  #movl %eax, file_size(%ebp)
   # Write the file to stdout 
-  movl $4, %eax 
-  movl $1, %ebx
-  movl $file_buffer, %ecx 
-  movl file_size(%ebp), %edx
-  int $syscall
-
+  pushl $1
+  pushl $file_buffer
+  pushl file_size(%ebp)
+  call write
+  addl $12, %esp 
+  
+# Build the newline function to put here or inside ask 
+# Think long and hard how to deal with everything else aftare we ask a question 
+# as we might not need to stack everything in here now, atleast all the buffer 
+# reading and writing 
+  call ask 
   # Ask user what they want to do 
   # call ask_user
 

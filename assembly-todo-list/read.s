@@ -18,6 +18,16 @@ read:
   movl size(%ebp), %edx 
   int $syscall
 
+  movl %eax, %esi   # store eax momentarily 
+
+  # Rewind the fd back to the start of the file to read again later
+  movl $19, %eax
+  movl $0, %ecx
+  movl $0, %edx 
+  int $syscall 
+
+  movl %esi, %eax 
+
   movl %ebp, %esp
   popl %ebp 
   ret 
