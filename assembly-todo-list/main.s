@@ -23,7 +23,7 @@ _start:
 
   # open the file
   pushl $fname 
-  pushl $0x422 
+  pushl $0x442 
   pushl $0644 
   call open 
   addl $12, %esp
@@ -31,6 +31,11 @@ _start:
   # int fd = eax 
   movl %eax, fd(%ebp)
   
+  loop:
+
+  # clear the screen
+  call clear
+
   # Get the file size 
   pushl $fname
   call fsize 
@@ -52,30 +57,38 @@ _start:
   pushl file_size(%ebp)
   call write
   addl $12, %esp 
+
+  call newline
   
-# Build the newline function to put here or inside ask 
-# Think long and hard how to deal with everything else aftare we ask a question 
-# as we might not need to stack everything in here now, atleast all the buffer 
-# reading and writing 
+  # Ask user to choose a command  
   call ask 
-  # Ask user what they want to do 
-  # call ask_user
 
-  # cmpb $'a', %al
-  # push what is needed 
-  # call add
-  # reset values 
-  # jmp start 
+  # Branches for decisions
+  cmpb $'a', %al 
+  je add_item 
 
-  # cmpb $'d', %al 
-  # push what is needed 
-  # call delete 
-  # reset values 
-  # jmp start 
+  cmpb $'d', %al 
+  je del 
 
-  # cmpb $'e', %al 
-  # jmp end 
+  cmpb $'e', %al 
+  je exit
 
-  # end 
-  movl $1, %eax     # change 1 to exit 
-  int $0x80        
+  jmp loop
+
+  add_item:
+    # Call add 
+    pushl fd(%ebp)
+    call add      
+    addl $4, %esp 
+    
+    jmp loop
+
+  del:
+    jmp loop
+
+  exit:
+    jmp end 
+
+  end: 
+    movl $1, %eax     # change 1 to exit 
+    int $0x80        
