@@ -84,8 +84,10 @@ _start:
     jmp loop
 
   del:
-    jmp loop
-
+    call delete
+    #jmp loop
+    movl %eax, %ebx 
+    jmp end
   exit:
     jmp end 
 

@@ -1,5 +1,5 @@
-main: main.o open.o fsize.o read.o write.o ask.o newline.o clear.o add.o
-	ld -m elf_i386 main.o open.o fsize.o read.o write.o ask.o newline.o clear.o add.o -o main 
+main: main.o open.o fsize.o read.o write.o ask.o newline.o clear.o add.o delete.o
+	ld -m elf_i386 main.o open.o fsize.o read.o write.o ask.o newline.o clear.o add.o delete.o -o main 
 
 main.o: main.s stdlib.s 
 	as -32 main.s -o main.o 
@@ -28,5 +28,8 @@ clear.o: clear.s stdlib.s
 add.o: add.s stdlib.s 
 	as -32 add.s -o add.o 
 
+delete.o: delete.s stdlib.s 
+	as -32 delete.s -o delete.o 
+
 clean: 
-	rm main main.o open.o fsize.o read.o write.o ask.o newline.o clear.o
+	rm main main.o open.o fsize.o read.o write.o ask.o newline.o clear.o add.o delete.o
