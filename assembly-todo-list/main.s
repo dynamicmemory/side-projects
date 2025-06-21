@@ -76,6 +76,7 @@ _start:
   jmp loop
 
   add_item:
+    # TODO force add \n to the end of every input
     # Call add 
     pushl fd(%ebp)
     call add      
@@ -84,9 +85,14 @@ _start:
     jmp loop
 
   del:
+    pushl fd(%ebp)
+    pushl file_size(%ebp)
     call delete
+    addl $8, %esp
+    
     #jmp loop
-    movl %eax, %ebx 
+
+    # I need to reup the fd in this file as it will be new  
     jmp end
   exit:
     jmp end 

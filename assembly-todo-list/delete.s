@@ -2,6 +2,9 @@
 
 .section .data
 
+.equ fd, 12
+.equ size, 8
+
 prompt: .ascii "Enter the line number of the todo you wish to delete\n\0"
 .equ prompt_len, 53
 
@@ -9,6 +12,8 @@ prompt: .ascii "Enter the line number of the todo you wish to delete\n\0"
 
 .section .bss
 .lcomm user_input, BUFFERSIZ
+.lcomm file_buffer, BUFFERSIZ
+.lcomm newfile_buffer, BUFFERSIZ
 
 .section .text 
 
@@ -35,24 +40,74 @@ delete:
     xorl %ecx, %ecx 
     xorl %edx, %edx
 
-  str2int: 
+  str2int_start: 
     movzbl user_input(%ecx), %eax
     cmpb $'\n', %al
-    jmp converted 
+    je str2int_end 
 
     subl $'0', %eax
     imull $10, %edx, %edx
     addl %eax, %edx
     incl %ecx
-    jmp str2int
-  converted:
+    jmp str2int_start
+  str2int_end:
+  
+  # Read the file into the buffer  
+  pushl fd(%ebp)
+  pushl $file_buffer
+  pushl $BUFFERSIZ
+  call read 
+  addl $12, %esp 
+  
+  movl %eax, %esi
+  xorl %ecx, %ecx 
+  xorl %ebx, %ebx
+  loop:
+    xorl %eax, %eax
 
-  # take the input and convert it to a number from a string 
-# then start a loop comparing a number of \n to the input number
-# every time loop we write the output of the file to the input of a new buffer 
-# counting the whole time to keep count of the file size 
-# 
+    cmpl $1, %edx 
+    je loop3
+
+    decl %edx 
+    loop2:
+      cmpb $'\n', %al
+      je loop
+
+      movl file_buffer(%ecx), %eax
+      movb %al, newfile_buffer(%ebx)
+
+      incl %ecx 
+      incl %ebx
+      
+      jmp loop2
+  loop3:
+    cmpb $'\n', %al 
+    je loop4
+
+    movl file_buffer(%ecx), %eax 
+    incl %ecx
+
+  loop4:
+    cmpl size(%ebp), %ecx
+    je finish
+
+    movl file_buffer(%ecx), %eax
+    movb %al, newfile_buffer(%ebx)
+    incl %ecx
+    incl %ebx
+    
+    jmp loop4
+
+    
+  finish:
+
+  pushl $1
+  pushl $newfile_buffer
+  # temp size for testing
+  pushl $10            
+  call write
+  addl $12, %esp 
+
   movl %ebp, %esp
   popl %ebp
-  movl %edx, %eax
   ret

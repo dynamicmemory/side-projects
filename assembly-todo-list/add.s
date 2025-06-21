@@ -32,6 +32,18 @@ add:
   call read 
   addl $12, %esp 
 
+  # Double check for \n char at end of input
+  decl %eax
+  movzbl todo(%eax), %ecx 
+  cmpb $'\n', %cl 
+  je fix_size 
+  
+  # add \n if there isnt one 
+  movb $'\n', todo(%eax) 
+
+  fix_size:
+    incl %eax
+
   # Write it to the database
   pushl fd(%ebp)
   pushl $todo 
