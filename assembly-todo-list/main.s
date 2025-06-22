@@ -85,15 +85,22 @@ _start:
     jmp loop
 
   del:
+    pushl $fname
     pushl fd(%ebp)
     pushl file_size(%ebp)
     call delete
-    addl $8, %esp
+    addl $12, %esp
     
-    #jmp loop
+    movl %eax, fd(%ebp)
 
-    # I need to reup the fd in this file as it will be new  
-    jmp end
+    # ABSTRACT TOMRROW - clear buffer 
+    movl $0, %eax
+    movl $file_buffer, %edi
+    movl $BUFFERSIZ, %ecx
+    shrl $2, %ecx
+    rep stosl
+
+    jmp loop
   exit:
     jmp end 
 
