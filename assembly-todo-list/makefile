@@ -1,5 +1,5 @@
-main: main.o open.o fsize.o read.o write.o ask.o newline.o clear.o add.o delete.o
-	ld -m elf_i386 main.o open.o fsize.o read.o write.o ask.o newline.o clear.o add.o delete.o -o main 
+main: main.o open.o fsize.o read.o write.o ask.o newline.o clear.o add.o delete.o writeout.o
+	ld -m elf_i386 main.o open.o fsize.o read.o write.o ask.o newline.o clear.o add.o delete.o writeout.o -o main 
 
 main.o: main.s stdlib.s 
 	as -32 main.s -o main.o 
@@ -15,6 +15,9 @@ read.o: read.s stdlib.s
 
 write.o: write.s stdlib.s 
 	as -32 write.s -o write.o 
+
+writeout.o: writeout.s stdlib.s 
+	as -32 writeout.s -o writeout.o 
 
 ask.o: ask.s stdlib.s 
 	as -32 ask.s -o ask.o

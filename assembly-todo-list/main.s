@@ -51,12 +51,19 @@ _start:
   call read 
   addl $12, %esp
 
-  # Write the file to stdout 
+  # Write the file to stdout  (using old write)
   pushl $1
   pushl $file_buffer
   pushl file_size(%ebp)
   call write
   addl $12, %esp 
+  
+  # TODO - adds numbers to todos, uncomment this block and remove above write 
+  #        block when fully implemented in write_out.s
+  #pushl fd(%ebp)
+  #pushl file_size(%ebp)
+  #call writeout
+  #addl $8, %esp
 
   call newline
   

@@ -1,4 +1,4 @@
 Do the dishes
-par my flibs head
 Wash the dog
-Go outside
+add numbers to the todos
+add a title and potential instructions up top
